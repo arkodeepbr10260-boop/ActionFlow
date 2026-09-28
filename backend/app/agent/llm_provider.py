@@ -26,6 +26,7 @@ class BedrockProvider(LLMProvider):
     def _init_client(self):
         try:
             kwargs = {"region_name": self.region}
+            # If explicit keys are provided in settings, use them; otherwise let boto3 resolve via standard AWS chain
             if settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY:
                 kwargs["aws_access_key_id"] = settings.AWS_ACCESS_KEY_ID
                 kwargs["aws_secret_access_key"] = settings.AWS_SECRET_ACCESS_KEY
@@ -35,7 +36,15 @@ class BedrockProvider(LLMProvider):
             self._client = None
 
     def is_live(self) -> bool:
-        return self._client is not None and bool(settings.AWS_ACCESS_KEY_ID or os.getenv("AWS_PROFILE"))
+        if not self._client or not self.model_id:
+            return False
+        # If client was initialized with explicit keys or credentials exist in boto3 session
+        try:
+            session = boto3.Session()
+            credentials = session.get_credentials()
+            return credentials is not None
+        except Exception:
+            return bool(settings.AWS_ACCESS_KEY_ID or os.getenv("AWS_PROFILE"))
 
     def generate(self, prompt: str, system_prompt: Optional[str] = None) -> str:
         if not self._client:
@@ -100,15 +109,15 @@ class MockBedrockProvider(LLMProvider):
 import os
 
 def get_llm_provider() -> LLMProvider:
-    # Check if real AWS credentials and model ID exist
-    if settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY and settings.BEDROCK_MODEL_ID:
+    # Attempt live BedrockProvider if model ID is configured
+    if settings.BEDROCK_MODEL_ID:
         try:
             provider = BedrockProvider()
             if provider.is_live():
                 logger.info(f"Using live AWS BedrockProvider with model: {settings.BEDROCK_MODEL_ID}")
                 return provider
         except Exception as e:
-            logger.warning(f"Error initializing BedrockProvider: {e}")
+            logger.warning(f"Error checking BedrockProvider: {e}")
             pass
     logger.info("Using offline MockBedrockProvider (development mode)")
     return MockBedrockProvider()

@@ -42,6 +42,8 @@ interface ChatResponse {
   pending_action: PendingAction | null;
   plan: Plan | null;
   final_result: string | null;
+  context_used?: string | null;
+  retry_info?: string | null;
 }
 interface Message {
   id: string;
@@ -52,6 +54,8 @@ interface Message {
   plan?: Plan | null;
   pendingAction?: PendingAction | null;
   workflowEvents?: WorkflowEvent[];
+  contextUsed?: string | null;
+  retryInfo?: string | null;
 }
 
 const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
@@ -198,6 +202,8 @@ export default function ActionFlowApp() {
         plan: data.plan,
         pendingAction: data.pending_action,
         workflowEvents: data.workflow_events,
+        contextUsed: data.context_used,
+        retryInfo: data.retry_info,
       };
       setMessages(prev => [...prev, assistantMsg]);
       setCurrentEvents([]);
@@ -306,6 +312,22 @@ export default function ActionFlowApp() {
                   }}>
                     <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                   </div>
+
+                  {/* Context and Retry Indicators */}
+                  {msg.sender === "assistant" && (msg.contextUsed || msg.retryInfo) && (
+                    <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                      {msg.contextUsed && (
+                        <span className="px-2.5 py-1 rounded-lg border font-medium flex items-center gap-1.5" style={{ background: "rgba(139,92,246,0.12)", borderColor: "rgba(139,92,246,0.3)", color: "var(--accent-purple)" }}>
+                          <span>🧠</span> {msg.contextUsed}
+                        </span>
+                      )}
+                      {msg.retryInfo && (
+                        <span className="px-2.5 py-1 rounded-lg border font-medium flex items-center gap-1.5" style={{ background: "rgba(245,158,11,0.12)", borderColor: "rgba(245,158,11,0.3)", color: "var(--accent-amber)" }}>
+                          <span>⚡</span> {msg.retryInfo}
+                        </span>
+                      )}
+                    </div>
+                  )}
 
                   {/* Tool Cards */}
                   {msg.sender === "assistant" && msg.toolResults && msg.toolResults.length > 0 && (

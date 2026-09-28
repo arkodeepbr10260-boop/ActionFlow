@@ -41,6 +41,8 @@ class ChatResponse(BaseModel):
     pending_action: Optional[PendingAction] = None
     plan: Optional[Dict[str, Any]] = None
     final_result: Optional[str] = None
+    context_used: Optional[str] = None
+    retry_info: Optional[str] = None
 
 class ReminderItem(BaseModel):
     id: str

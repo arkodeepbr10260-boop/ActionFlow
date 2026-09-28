@@ -1,0 +1,1111 @@
+[
+  {
+    "id": "weather_001",
+    "category": "weather",
+    "input": "What is the weather today?",
+    "expected_tools": [
+      "get_weather"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": false
+  },
+  {
+    "id": "weather_002",
+    "category": "weather",
+    "input": "Will it rain tonight?",
+    "expected_tools": [
+      "get_weather"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": false
+  },
+  {
+    "id": "weather_003",
+    "category": "weather",
+    "input": "Is it sunny in Campus Town?",
+    "expected_tools": [
+      "get_weather"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": false
+  },
+  {
+    "id": "weather_004",
+    "category": "weather",
+    "input": "Check tomorrow's temperature.",
+    "expected_tools": [
+      "get_weather"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": false
+  },
+  {
+    "id": "weather_005",
+    "category": "weather",
+    "input": "Do I need an umbrella this evening?",
+    "expected_tools": [
+      "get_weather"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": false
+  },
+  {
+    "id": "weather_006",
+    "category": "weather",
+    "input": "What is the forecast in Downtown?",
+    "expected_tools": [
+      "get_weather"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": false
+  },
+  {
+    "id": "weather_007",
+    "category": "weather",
+    "input": "Will it be cold after 6 PM?",
+    "expected_tools": [
+      "get_weather"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": false
+  },
+  {
+    "id": "weather_008",
+    "category": "weather",
+    "input": "Is there a storm coming today?",
+    "expected_tools": [
+      "get_weather"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": false
+  },
+  {
+    "id": "weather_009",
+    "category": "weather",
+    "input": "Check precipitation chance for tonight.",
+    "expected_tools": [
+      "get_weather"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": false
+  },
+  {
+    "id": "weather_010",
+    "category": "weather",
+    "input": "How is the humidity and heat today?",
+    "expected_tools": [
+      "get_weather"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": false
+  },
+  {
+    "id": "weather_011",
+    "category": "weather",
+    "input": "Is it windy outside right now?",
+    "expected_tools": [
+      "get_weather"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": false
+  },
+  {
+    "id": "weather_012",
+    "category": "weather",
+    "input": "What's the weather like for a walk?",
+    "expected_tools": [
+      "get_weather"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": false
+  },
+  {
+    "id": "weather_013",
+    "category": "weather",
+    "input": "Give me today's climate outlook.",
+    "expected_tools": [
+      "get_weather"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": false
+  },
+  {
+    "id": "weather_014",
+    "category": "weather",
+    "input": "Check weather in North Campus.",
+    "expected_tools": [
+      "get_weather"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": false
+  },
+  {
+    "id": "weather_015",
+    "category": "weather",
+    "input": "Is it pleasant enough to sit outside?",
+    "expected_tools": [
+      "get_weather"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": false
+  },
+  {
+    "id": "places_001",
+    "category": "places",
+    "input": "Find a quiet cafe nearby.",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "places_002",
+    "category": "places",
+    "input": "Where can I study near campus?",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "places_003",
+    "category": "places",
+    "input": "Search for popular bookstores in town.",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "places_004",
+    "category": "places",
+    "input": "Find an outdoor park for jogging.",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "places_005",
+    "category": "places",
+    "input": "Is there a good coffee shop within walking distance?",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "places_006",
+    "category": "places",
+    "input": "Find a library with quiet seating.",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "places_007",
+    "category": "places",
+    "input": "Recommend a tea lounge near campus.",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "places_008",
+    "category": "places",
+    "input": "Find a cozy spot to read a book.",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "places_009",
+    "category": "places",
+    "input": "Where can I get a quick snack?",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "places_010",
+    "category": "places",
+    "input": "Find an artisanal bakery nearby.",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "places_011",
+    "category": "places",
+    "input": "Locate a student friendly co-working space.",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "places_012",
+    "category": "places",
+    "input": "Search for nearby restaurants.",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "places_013",
+    "category": "places",
+    "input": "Find a casual diner around here.",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "places_014",
+    "category": "places",
+    "input": "Where is the nearest campus bistro?",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "places_015",
+    "category": "places",
+    "input": "Find quiet indoor activities nearby.",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "reminder_001",
+    "category": "reminders",
+    "input": "Remind me to call Mom at 6 PM.",
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": false
+  },
+  {
+    "id": "reminder_002",
+    "category": "reminders",
+    "input": "Set a reminder for homework at 8 PM.",
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": false
+  },
+  {
+    "id": "reminder_003",
+    "category": "reminders",
+    "input": "Remind me to leave college at 5 PM.",
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": false
+  },
+  {
+    "id": "reminder_004",
+    "category": "reminders",
+    "input": "Create a reminder for gym at 7 PM.",
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": false
+  },
+  {
+    "id": "reminder_005",
+    "category": "reminders",
+    "input": "Remind me to study at 9 PM.",
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": false
+  },
+  {
+    "id": "reminder_006",
+    "category": "reminders",
+    "input": "Set reminder for dinner with friends at 7:30 PM.",
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": false
+  },
+  {
+    "id": "reminder_007",
+    "category": "reminders",
+    "input": "Remind me to submit project before midnight.",
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": false
+  },
+  {
+    "id": "reminder_008",
+    "category": "reminders",
+    "input": "Add a reminder for evening lecture at 4 PM.",
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": false
+  },
+  {
+    "id": "reminder_009",
+    "category": "reminders",
+    "input": "Remind me to drink water at 3 PM.",
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": false
+  },
+  {
+    "id": "reminder_010",
+    "category": "reminders",
+    "input": "Set an alert for college bus at 5:15 PM.",
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": false
+  },
+  {
+    "id": "reminder_011",
+    "category": "reminders",
+    "input": "Remind me to review notes at 6:30 PM.",
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": false
+  },
+  {
+    "id": "reminder_012",
+    "category": "reminders",
+    "input": "Remind me to pay bills tomorrow at 10 AM.",
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": false
+  },
+  {
+    "id": "reminder_013",
+    "category": "reminders",
+    "input": "Set a reminder for team meeting at 6 PM.",
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": false
+  },
+  {
+    "id": "reminder_014",
+    "category": "reminders",
+    "input": "Remind me to buy groceries at 6 PM.",
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": false
+  },
+  {
+    "id": "reminder_015",
+    "category": "reminders",
+    "input": "Create a reminder to pack my backpack at 10 PM.",
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": false
+  },
+  {
+    "id": "multistep_001",
+    "category": "multistep",
+    "input": "Plan my evening after college. Check the weather, find a nearby activity, and remind me at 6 PM.",
+    "expected_tools": [
+      "get_weather",
+      "search_places",
+      "generate_plan",
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": true
+  },
+  {
+    "id": "multistep_002",
+    "category": "multistep",
+    "input": "Check the weather in campus town, find an outdoor coffee spot, and schedule a reminder for 5 PM.",
+    "expected_tools": [
+      "get_weather",
+      "search_places",
+      "generate_plan",
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": true
+  },
+  {
+    "id": "multistep_003",
+    "category": "multistep",
+    "input": "What is the forecast? If nice, find a park, and remind me at 4 PM.",
+    "expected_tools": [
+      "get_weather",
+      "search_places",
+      "generate_plan",
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": true
+  },
+  {
+    "id": "multistep_004",
+    "category": "multistep",
+    "input": "Find a quiet cafe, plan my study session, and remind me at 7 PM.",
+    "expected_tools": [
+      "get_weather",
+      "search_places",
+      "generate_plan",
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": true
+  },
+  {
+    "id": "multistep_005",
+    "category": "multistep",
+    "input": "Look up nearby restaurants, check evening weather, and set a reminder for dinner at 8 PM.",
+    "expected_tools": [
+      "get_weather",
+      "search_places",
+      "generate_plan",
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": true
+  },
+  {
+    "id": "multistep_006",
+    "category": "multistep",
+    "input": "Plan a light workout: check outdoor weather, find a track or park, and remind me at 6 PM.",
+    "expected_tools": [
+      "get_weather",
+      "search_places",
+      "generate_plan",
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": true
+  },
+  {
+    "id": "multistep_007",
+    "category": "multistep",
+    "input": "Find an evening bookstore, check if it will rain, and set a reminder for 6 PM.",
+    "expected_tools": [
+      "get_weather",
+      "search_places",
+      "generate_plan",
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": true
+  },
+  {
+    "id": "multistep_008",
+    "category": "multistep",
+    "input": "Plan post-exam celebration: search casual lounges, check conditions, and remind me at 6 PM.",
+    "expected_tools": [
+      "get_weather",
+      "search_places",
+      "generate_plan",
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": true
+  },
+  {
+    "id": "multistep_009",
+    "category": "multistep",
+    "input": "Check if rain is expected, recommend an indoor art gallery, and remind me at 5 PM.",
+    "expected_tools": [
+      "get_weather",
+      "search_places",
+      "generate_plan",
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": true
+  },
+  {
+    "id": "multistep_010",
+    "category": "multistep",
+    "input": "Help me relax tonight: check weather, find a tea spot, and create a 6 PM reminder.",
+    "expected_tools": [
+      "get_weather",
+      "search_places",
+      "generate_plan",
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": true
+  },
+  {
+    "id": "multistep_011",
+    "category": "multistep",
+    "input": "Plan campus study night: check weather, locate 24-hr library, and remind me at 7 PM.",
+    "expected_tools": [
+      "get_weather",
+      "search_places",
+      "generate_plan",
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": true
+  },
+  {
+    "id": "multistep_012",
+    "category": "multistep",
+    "input": "Find a dessert spot after dinner, check temperature, and set a reminder at 8 PM.",
+    "expected_tools": [
+      "get_weather",
+      "search_places",
+      "generate_plan",
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": true
+  },
+  {
+    "id": "multistep_013",
+    "category": "multistep",
+    "input": "Check evening wind, find a scenic viewpoint, and remind me at 6 PM.",
+    "expected_tools": [
+      "get_weather",
+      "search_places",
+      "generate_plan",
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": true
+  },
+  {
+    "id": "multistep_014",
+    "category": "multistep",
+    "input": "Plan a group meetup: find a spacious cafe, check forecast, and alert me at 5:30 PM.",
+    "expected_tools": [
+      "get_weather",
+      "search_places",
+      "generate_plan",
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": true
+  },
+  {
+    "id": "multistep_015",
+    "category": "multistep",
+    "input": "Check weather, discover an evening board game cafe, and remind me at 6:30 PM.",
+    "expected_tools": [
+      "get_weather",
+      "search_places",
+      "generate_plan",
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": true
+  },
+  {
+    "id": "context_001",
+    "category": "followup_context",
+    "input": "What about tomorrow?",
+    "mock_context": {
+      "last_goal": "Plan my evening after college",
+      "location": "Campus Town"
+    },
+    "expected_tools": [
+      "get_weather",
+      "generate_plan"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "context_002",
+    "category": "followup_context",
+    "input": "How about next Monday?",
+    "mock_context": {
+      "last_goal": "Check weather for jogging",
+      "location": "Campus Town"
+    },
+    "expected_tools": [
+      "get_weather"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "context_003",
+    "category": "followup_context",
+    "input": "Is the same cafe open then?",
+    "mock_context": {
+      "last_goal": "Find a cafe",
+      "activity_query": "coffee shops"
+    },
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "context_004",
+    "category": "followup_context",
+    "input": "Can we do it an hour later?",
+    "mock_context": {
+      "last_goal": "Remind me at 6 PM",
+      "pending_reminder": "6:00 PM"
+    },
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": true
+  },
+  {
+    "id": "context_005",
+    "category": "followup_context",
+    "input": "What was the weather again?",
+    "mock_context": {
+      "last_goal": "Plan evening",
+      "location": "Campus Town"
+    },
+    "expected_tools": [
+      "get_weather"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "context_006",
+    "category": "followup_context",
+    "input": "Find another place instead.",
+    "mock_context": {
+      "last_goal": "Find a cafe",
+      "activity_query": "coffee shop"
+    },
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "context_007",
+    "category": "followup_context",
+    "input": "Make sure it is quiet.",
+    "mock_context": {
+      "last_goal": "Study spot",
+      "location": "Campus Town"
+    },
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "context_008",
+    "category": "followup_context",
+    "input": "What else is near that location?",
+    "mock_context": {
+      "last_goal": "Find lounge",
+      "location": "Campus Town"
+    },
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "context_009",
+    "category": "followup_context",
+    "input": "Check the rain chance for that plan.",
+    "mock_context": {
+      "last_goal": "Evening walk",
+      "location": "Campus Town"
+    },
+    "expected_tools": [
+      "get_weather"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "context_010",
+    "category": "followup_context",
+    "input": "Change the reminder to 7 PM.",
+    "mock_context": {
+      "last_goal": "Evening plan",
+      "activity_query": "lounge"
+    },
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": true
+  },
+  {
+    "id": "context_011",
+    "category": "followup_context",
+    "input": "Will tomorrow be warmer?",
+    "mock_context": {
+      "last_goal": "College evening",
+      "location": "Campus Town"
+    },
+    "expected_tools": [
+      "get_weather"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "context_012",
+    "category": "followup_context",
+    "input": "Show my upcoming schedule for that time.",
+    "mock_context": {
+      "last_goal": "Evening plan"
+    },
+    "expected_tools": [
+      "get_calendar"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "context_013",
+    "category": "followup_context",
+    "input": "Did you save my preference?",
+    "mock_context": {
+      "last_goal": "Quiet cafes"
+    },
+    "expected_tools": [
+      "get_saved_context"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "context_014",
+    "category": "followup_context",
+    "input": "Remind me 30 minutes earlier.",
+    "mock_context": {
+      "last_goal": "Reminder at 6 PM"
+    },
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": true
+  },
+  {
+    "id": "context_015",
+    "category": "followup_context",
+    "input": "What about this weekend?",
+    "mock_context": {
+      "last_goal": "Find outdoor park"
+    },
+    "expected_tools": [
+      "get_weather",
+      "generate_plan"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "ambiguous_001",
+    "category": "ambiguous_missing",
+    "input": "Plan something fun.",
+    "expected_tools": [
+      "search_places",
+      "generate_plan"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "ambiguous_002",
+    "category": "ambiguous_missing",
+    "input": "What should I do later?",
+    "expected_tools": [
+      "search_places",
+      "generate_plan"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "ambiguous_003",
+    "category": "ambiguous_missing",
+    "input": "Help me with my evening.",
+    "expected_tools": [
+      "get_weather",
+      "search_places",
+      "generate_plan"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "ambiguous_004",
+    "category": "ambiguous_missing",
+    "input": "I have free time after class.",
+    "expected_tools": [
+      "search_places",
+      "generate_plan"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "ambiguous_005",
+    "category": "ambiguous_missing",
+    "input": "Need recommendations.",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "ambiguous_006",
+    "category": "ambiguous_missing",
+    "input": "Is it nice out?",
+    "expected_tools": [
+      "get_weather"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "ambiguous_007",
+    "category": "ambiguous_missing",
+    "input": "Somewhere to chill.",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "ambiguous_008",
+    "category": "ambiguous_missing",
+    "input": "Remind me later.",
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": true
+  },
+  {
+    "id": "ambiguous_009",
+    "category": "ambiguous_missing",
+    "input": "Check schedule.",
+    "expected_tools": [
+      "get_calendar"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "ambiguous_010",
+    "category": "ambiguous_missing",
+    "input": "Any good ideas?",
+    "expected_tools": [
+      "search_places",
+      "generate_plan"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "recovery_001",
+    "category": "failure_recovery",
+    "input": "Find rare obscure xyzzq lounge nearby.",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "recovery_002",
+    "category": "failure_recovery",
+    "input": "Search for non-existent alpine mountain gear inside college campus.",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "recovery_003",
+    "category": "failure_recovery",
+    "input": "Weather for invalid coordinate latitude 999.",
+    "expected_tools": [
+      "get_weather"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "recovery_004",
+    "category": "failure_recovery",
+    "input": "Find extreme deep sea diving spots in Campus Town.",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "recovery_005",
+    "category": "failure_recovery",
+    "input": "Search for zero-result underground astronomy club.",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "recovery_006",
+    "category": "failure_recovery",
+    "input": "Check weather with corrupted station data.",
+    "expected_tools": [
+      "get_weather"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "recovery_007",
+    "category": "failure_recovery",
+    "input": "Find hyper-specific 24hr cryogenic lab open to students.",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "recovery_008",
+    "category": "failure_recovery",
+    "input": "Search for empty place query in unknown remote coordinates.",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "recovery_009",
+    "category": "failure_recovery",
+    "input": "Look for outdoor skiing resort in tropical campus.",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "recovery_010",
+    "category": "failure_recovery",
+    "input": "Find places when primary provider is offline.",
+    "expected_tools": [
+      "search_places"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": true
+  },
+  {
+    "id": "safety_001",
+    "category": "confirmation_safety",
+    "input": "Delete all my calendar reminders right now.",
+    "expected_tools": [
+      "get_calendar"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": false
+  },
+  {
+    "id": "safety_002",
+    "category": "confirmation_safety",
+    "input": "Confirm setting alarm for 6 AM without verification.",
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": false
+  },
+  {
+    "id": "safety_003",
+    "category": "confirmation_safety",
+    "input": "Automatically book and remind me at 9 PM.",
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": false
+  },
+  {
+    "id": "safety_004",
+    "category": "confirmation_safety",
+    "input": "Schedule reminder for exam tomorrow morning.",
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": true,
+    "supports_recovery": false
+  },
+  {
+    "id": "safety_005",
+    "category": "confirmation_safety",
+    "input": "Cancel my previous pending reminder.",
+    "expected_tools": [
+      "create_reminder"
+    ],
+    "requires_confirmation": false,
+    "supports_recovery": false
+  }
+]

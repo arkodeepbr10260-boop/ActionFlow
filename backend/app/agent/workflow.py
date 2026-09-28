@@ -7,15 +7,14 @@ from app.db import (
     update_pending_action_status
 )
 from app.agent.llm_provider import get_llm_provider
+from app.mcp.client import get_mcp_client
 from app.schemas import BedrockWorkflowPlan, BedrockWorkflowTask
-from app.tools.weather import get_weather
-from app.tools.places import search_places
-from app.tools.planner import generate_plan
 from app.tools.reminder import create_reminder
 
 class AgentOrchestrator:
     def __init__(self):
         self.llm = get_llm_provider()
+        self.mcp = get_mcp_client()
 
     async def execute_workflow(self, session_id: str, message: str) -> Dict[str, Any]:
         # 1. Save user message & load session context
@@ -36,9 +35,30 @@ class AgentOrchestrator:
         # Step 1: Request Interpreter via LLM
         emit_event("Understanding request")
         
+        # Detect non-sensitive user preferences from message
+        message_lower = message.lower()
+        if "quiet" in message_lower:
+            save_context_item(session_id, "preferred_activity_type", "quiet spots")
+            existing_context["preferred_activity_type"] = "quiet spots"
+        elif "outdoor" in message_lower:
+            save_context_item(session_id, "preferred_activity_type", "outdoor parks and cafes")
+            existing_context["preferred_activity_type"] = "outdoor parks and cafes"
+        elif "coffee" in message_lower or "cafe" in message_lower:
+            save_context_item(session_id, "preferred_activity_type", "coffee shops")
+            existing_context["preferred_activity_type"] = "coffee shops"
+
+        context_used_text = None
+        if existing_context.get("preferred_activity_type"):
+            context_used_text = f"Using saved preference: {existing_context['preferred_activity_type']}"
+
         system_prompt = (
-            "You are ActionFlow's intelligent orchestrator. Given a user goal and previous conversation context, "
-            "determine the structured tasks needed. Respond ONLY with a valid JSON object matching this schema:\n"
+            "You are ActionFlow's intelligent agentic orchestrator. Inspect the user goal, message history, "
+            "and saved persistent context. Decide the structured task sequence using the registered MCP tools:\n"
+            "- get_weather(location: string, date: string)\n"
+            "- search_places(query: string, location: string)\n"
+            "- generate_plan(user_goal: string)\n"
+            "- create_reminder(title: string, datetime_str: string)\n\n"
+            "Respond ONLY with a valid JSON object matching this schema:\n"
             "{\n"
             '  "goal": "summarized user goal",\n'
             '  "tasks": [\n'
@@ -58,7 +78,6 @@ class AgentOrchestrator:
         workflow_plan: Optional[BedrockWorkflowPlan] = None
         try:
             llm_output = self.llm.generate(user_prompt, system_prompt=system_prompt)
-            # Clean potential markdown wrapping
             cleaned = llm_output.strip()
             if cleaned.startswith("```json"):
                 cleaned = cleaned[7:]
@@ -68,12 +87,11 @@ class AgentOrchestrator:
                 cleaned = cleaned[:-3]
             data = json.loads(cleaned.strip())
             workflow_plan = BedrockWorkflowPlan(**data)
-        except Exception as e:
-            # Safe fallback if LLM response is malformed or Bedrock call fails
-            message_lower = message.lower()
+        except Exception:
+            # Deterministic adaptive fallback
             if "tomorrow" in message_lower and existing_context.get("last_goal"):
                 loc = existing_context.get("location", "Campus Town")
-                act = existing_context.get("activity_query", "nearby lounge or coffee shop")
+                act = existing_context.get("preferred_activity_type") or existing_context.get("activity_query", "nearby lounge or coffee shop")
                 workflow_plan = BedrockWorkflowPlan(
                     goal=message,
                     tasks=[
@@ -84,89 +102,151 @@ class AgentOrchestrator:
                     requires_confirmation=False
                 )
             else:
+                act = existing_context.get("preferred_activity_type", "nearby lounge or coffee shop")
                 workflow_plan = BedrockWorkflowPlan(
                     goal=message,
                     tasks=[
                         BedrockWorkflowTask(tool="get_weather", arguments={"location": "Campus Town", "date": "Today"}),
-                        BedrockWorkflowTask(tool="search_places", arguments={"query": "nearby lounge or coffee shop", "location": "Campus Town"}),
+                        BedrockWorkflowTask(tool="search_places", arguments={"query": act, "location": "Campus Town"}),
                         BedrockWorkflowTask(tool="generate_plan", arguments={"user_goal": message}),
                         BedrockWorkflowTask(tool="create_reminder", arguments={"title": "Evening Activity: Campus Lounge", "datetime_str": "6:00 PM"})
                     ],
                     requires_confirmation=("remind" in message_lower or "reminder" in message_lower or "6" in message_lower)
                 )
 
-        # Step 2: Task Planner & Tool Selector
-        emit_event("Planning tasks", {"goal": workflow_plan.goal, "task_count": len(workflow_plan.tasks)})
+        emit_event("Planning")
 
+        # Bounded adaptive agent loop (maximum 8 iterations)
+        MAX_ITERATIONS = 8
+        task_queue: List[BedrockWorkflowTask] = list(workflow_plan.tasks)
+        iteration = 0
+        retry_counts: Dict[str, int] = {}
         collected_results: Dict[str, Any] = {}
         pending_action_data = None
         weather_res: Dict[str, Any] = {"weather_condition": "Clear", "temperature": "22°C"}
         places_res: List[Dict[str, Any]] = []
         plan_res: Dict[str, Any] = {}
         location_used = "Campus Town"
-        activity_used = "nearby spots"
+        activity_used = existing_context.get("preferred_activity_type", "nearby spots")
         target_date = "Today"
+        retry_notes: List[str] = []
 
-        # Step 3: Execute tasks produced by Bedrock/planner
-        for task in workflow_plan.tasks:
-            t_name = task.tool
-            t_args = task.arguments
+        while task_queue and iteration < MAX_ITERATIONS:
+            iteration += 1
+            current_task = task_queue.pop(0)
+            t_name = current_task.tool
+            t_args = dict(current_task.arguments)
 
-            if t_name == "get_weather":
-                emit_event("Checking weather")
-                location_used = t_args.get("location", "Campus Town")
-                target_date = t_args.get("date", "Today")
-                weather_res = await get_weather(location_used, target_date)
-                collected_results["weather"] = weather_res
-                log_tool_run(session_id, "get_weather", t_args, weather_res, "success")
+            emit_event("Calling tool", {"tool": t_name, "iteration": iteration})
+
+            # Native execution through MCP Client Service layer
+            if t_name == "create_reminder":
+                # State-changing tool must be staged unconfirmed
+                t_args["session_id"] = session_id
+                t_args["confirmed"] = False
+                if not t_args.get("title"):
+                    t_args["title"] = f"Evening Activity: {plan_res.get('recommended_place', {}).get('name', 'Planned Activity')}"
+                if not t_args.get("datetime_str"):
+                    t_args["datetime_str"] = "6:00 PM"
+
+                emit_event("Waiting for confirmation")
+                mcp_resp = await self.mcp.invoke_tool(t_name, t_args)
+                tool_data = mcp_resp.get("data", {})
+                pending_action_data = tool_data.get("pending_action")
+                log_tool_run(session_id, t_name, t_args, tool_data, "pending_confirmation")
                 tool_results.append({
-                    "tool_name": "get_weather",
+                    "tool_name": t_name,
                     "inputs": t_args,
-                    "outputs": weather_res,
-                    "status": "success"
+                    "outputs": tool_data,
+                    "status": "pending_confirmation"
                 })
+                emit_event("Tool completed", {"tool": t_name})
+                continue
 
-            elif t_name == "search_places":
-                emit_event("Searching nearby places")
-                activity_used = t_args.get("query", "nearby spots")
-                location_used = t_args.get("location", location_used)
-                places_res = await search_places(activity_used, location_used)
+            elif t_name == "generate_plan":
+                t_args["tool_results_json"] = json.dumps(collected_results)
+                if "user_goal" not in t_args:
+                    t_args["user_goal"] = message
+
+            # Execute tool through MCP
+            mcp_resp = await self.mcp.invoke_tool(t_name, t_args)
+            emit_event("Tool completed", {"tool": t_name})
+            emit_event("Evaluating result", {"tool": t_name})
+
+            tool_succeeded = mcp_resp.get("success", False)
+            tool_data = mcp_resp.get("data", {})
+
+            # Adaptive recovery: if place search returns empty or tool failed, retry with broadened query
+            if t_name == "search_places":
+                places = tool_data if isinstance(tool_data, list) else tool_data.get("places", [])
+                if (not tool_succeeded or len(places) == 0) and retry_counts.get("search_places", 0) < 2:
+                    retry_counts["search_places"] = retry_counts.get("search_places", 0) + 1
+                    broadened_query = "cafe or park"
+                    retry_notes.append(f"Place search broadened to '{broadened_query}'")
+                    task_queue.insert(0, BedrockWorkflowTask(
+                        tool="search_places",
+                        arguments={"query": broadened_query, "location": t_args.get("location", location_used)}
+                    ))
+                    emit_event("Choosing next step", {"action": "retry_place_search_broadened"})
+                    continue
+
+                places_res = places if isinstance(places, list) else []
                 collected_results["places"] = places_res
-                log_tool_run(session_id, "search_places", t_args, {"places": places_res}, "success")
+                activity_used = t_args.get("query", activity_used)
+                location_used = t_args.get("location", location_used)
+                log_tool_run(session_id, t_name, t_args, {"places": places_res}, "success")
                 tool_results.append({
-                    "tool_name": "search_places",
+                    "tool_name": t_name,
                     "inputs": t_args,
                     "outputs": {"places": places_res},
                     "status": "success"
                 })
 
-            elif t_name == "generate_plan":
-                emit_event("Preparing plan")
-                plan_res = generate_plan(message, collected_results)
-                log_tool_run(session_id, "generate_plan", {"goal": message}, plan_res, "success")
+            elif t_name == "get_weather":
+                if not tool_succeeded and retry_counts.get("get_weather", 0) < 2:
+                    retry_counts["get_weather"] = retry_counts.get("get_weather", 0) + 1
+                    retry_notes.append("Weather retry executed")
+                    task_queue.insert(0, BedrockWorkflowTask(
+                        tool="get_weather",
+                        arguments={"location": t_args.get("location", "Campus Town"), "date": t_args.get("date", "Today")}
+                    ))
+                    emit_event("Choosing next step", {"action": "retry_weather"})
+                    continue
+
+                weather_res = tool_data if isinstance(tool_data, dict) else {"weather_condition": "Clear", "temperature": "22°C"}
+                collected_results["weather"] = weather_res
+                location_used = t_args.get("location", location_used)
+                target_date = t_args.get("date", target_date)
+                log_tool_run(session_id, t_name, t_args, weather_res, "success")
                 tool_results.append({
-                    "tool_name": "generate_plan",
-                    "inputs": {"user_goal": message},
+                    "tool_name": t_name,
+                    "inputs": t_args,
+                    "outputs": weather_res,
+                    "status": "success"
+                })
+
+            elif t_name == "generate_plan":
+                plan_res = tool_data if isinstance(tool_data, dict) else {}
+                log_tool_run(session_id, t_name, t_args, plan_res, "success")
+                tool_results.append({
+                    "tool_name": t_name,
+                    "inputs": t_args,
                     "outputs": plan_res,
                     "status": "success"
                 })
 
-            elif t_name == "create_reminder":
-                # Explicit confirmation gate: unconfirmed reminder is staged
-                emit_event("Waiting for confirmation")
-                rem_title = t_args.get("title") or f"Evening Activity: {plan_res.get('recommended_place', {}).get('name', 'Planned Activity')}"
-                time_str = t_args.get("datetime_str", "6:00 PM")
-                rem_res = create_reminder(session_id, rem_title, time_str, confirmed=False)
-                pending_action_data = rem_res.get("pending_action")
-                log_tool_run(session_id, "create_reminder", {"title": rem_title, "datetime_str": time_str, "confirmed": False}, rem_res, "pending_confirmation")
+            elif t_name in ["get_saved_context", "save_context", "get_calendar"]:
+                log_tool_run(session_id, t_name, t_args, tool_data, "success")
                 tool_results.append({
-                    "tool_name": "create_reminder",
-                    "inputs": {"title": rem_title, "datetime_str": time_str},
-                    "outputs": rem_res,
-                    "status": "pending_confirmation"
+                    "tool_name": t_name,
+                    "inputs": t_args,
+                    "outputs": tool_data,
+                    "status": "success"
                 })
 
-        # Save persistent context
+            emit_event("Choosing next step")
+
+        # Save persistent context & preferences
         save_context_item(session_id, "last_goal", message)
         save_context_item(session_id, "location", location_used)
         save_context_item(session_id, "activity_query", activity_used)
@@ -175,7 +255,7 @@ class AgentOrchestrator:
 
         emit_event("Workflow complete")
 
-        # Response text formulation (concise, verifiable, without chain-of-thought)
+        # Response formulation (no hidden reasoning/chain-of-thought exposed)
         if pending_action_data:
             rec_name = plan_res.get("recommended_place", {}).get("name", "the recommended place")
             rec_cat = plan_res.get("recommended_place", {}).get("category", "Activity")
@@ -206,7 +286,9 @@ class AgentOrchestrator:
             "tool_results": tool_results,
             "pending_action": pending_action_data,
             "plan": plan_res,
-            "final_result": response_text
+            "final_result": response_text,
+            "context_used": context_used_text,
+            "retry_info": "; ".join(retry_notes) if retry_notes else None
         }
 
     async def confirm_action(self, action_id: str) -> Dict[str, Any]:
