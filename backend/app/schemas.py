@@ -53,3 +53,12 @@ class ReminderItem(BaseModel):
 class ContextResponse(BaseModel):
     session_id: str
     context: Dict[str, Any]
+
+class BedrockWorkflowTask(BaseModel):
+    tool: str
+    arguments: Dict[str, Any] = Field(default_factory=dict)
+
+class BedrockWorkflowPlan(BaseModel):
+    goal: str
+    tasks: List[BedrockWorkflowTask] = Field(default_factory=list)
+    requires_confirmation: bool = False

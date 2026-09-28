@@ -64,43 +64,51 @@ class MockBedrockProvider(LLMProvider):
     def generate(self, prompt: str, system_prompt: Optional[str] = None) -> str:
         prompt_lower = prompt.lower()
         
-        if "plan my evening after college" in prompt_lower or "college" in prompt_lower:
+        # Check follow-up queries first so context carrying "college" does not shadow "tomorrow"
+        if "tomorrow" in prompt_lower:
             return json.dumps({
-                "understood_goal": "Plan an evening outing after college including weather check, place search, and reminder.",
-                "tools_needed": ["get_weather", "search_places", "generate_plan", "create_reminder"],
-                "location": "Campus Town",
-                "activity_query": "lounge or coffee shop",
-                "reminder_title": "Evening College Outing",
-                "reminder_time": "6:00 PM"
+                "goal": "Check weather and plan activities for tomorrow based on previous college evening preferences.",
+                "tasks": [
+                    {"tool": "get_weather", "arguments": {"location": "Campus Town", "date": "Tomorrow"}},
+                    {"tool": "search_places", "arguments": {"query": "nearby lounge or coffee shop", "location": "Campus Town"}},
+                    {"tool": "generate_plan", "arguments": {"user_goal": "What about tomorrow?"}}
+                ],
+                "requires_confirmation": False
             })
-        elif "tomorrow" in prompt_lower:
+        elif "plan my evening after college" in prompt_lower or "college" in prompt_lower:
             return json.dumps({
-                "understood_goal": "Check weather and plan activities for tomorrow based on previous college evening preferences.",
-                "tools_needed": ["get_weather", "search_places", "generate_plan"],
-                "location": "Campus Town",
-                "activity_query": "outdoor park or bistro",
-                "reminder_title": "Tomorrow Evening Plan",
-                "reminder_time": "5:30 PM"
+                "goal": "Plan an evening outing after college including weather check, place search, and reminder.",
+                "tasks": [
+                    {"tool": "get_weather", "arguments": {"location": "Campus Town", "date": "Today"}},
+                    {"tool": "search_places", "arguments": {"query": "nearby lounge or coffee shop", "location": "Campus Town"}},
+                    {"tool": "generate_plan", "arguments": {"user_goal": prompt}},
+                    {"tool": "create_reminder", "arguments": {"title": "Evening Activity: Campus Lounge", "datetime_str": "6:00 PM"}}
+                ],
+                "requires_confirmation": True
             })
         else:
             return json.dumps({
-                "understood_goal": prompt,
-                "tools_needed": ["get_weather", "search_places", "generate_plan"],
-                "location": "Downtown",
-                "activity_query": "popular spots",
-                "reminder_title": "General Task",
-                "reminder_time": "6:00 PM"
+                "goal": prompt,
+                "tasks": [
+                    {"tool": "get_weather", "arguments": {"location": "Campus Town", "date": "Today"}},
+                    {"tool": "search_places", "arguments": {"query": "popular spots", "location": "Campus Town"}},
+                    {"tool": "generate_plan", "arguments": {"user_goal": prompt}}
+                ],
+                "requires_confirmation": False
             })
 
 import os
 
 def get_llm_provider() -> LLMProvider:
-    # Check if real AWS credentials or AWS_PROFILE exist
-    if settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY:
+    # Check if real AWS credentials and model ID exist
+    if settings.AWS_ACCESS_KEY_ID and settings.AWS_SECRET_ACCESS_KEY and settings.BEDROCK_MODEL_ID:
         try:
             provider = BedrockProvider()
-            return provider
-        except Exception:
+            if provider.is_live():
+                logger.info(f"Using live AWS BedrockProvider with model: {settings.BEDROCK_MODEL_ID}")
+                return provider
+        except Exception as e:
+            logger.warning(f"Error initializing BedrockProvider: {e}")
             pass
-    # Fallback to clear, structured mock provider for offline/local testing
+    logger.info("Using offline MockBedrockProvider (development mode)")
     return MockBedrockProvider()

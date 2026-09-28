@@ -7,10 +7,12 @@ class Settings(BaseSettings):
     DEBUG: bool = True
     
     # AWS / Bedrock Settings
+    # BEDROCK_MODEL_ID can be configured to any model available in your AWS region/account
+    # e.g., us.anthropic.claude-3-5-sonnet-20241022-v2:0, amazon.nova-pro-v1:0, etc.
     AWS_ACCESS_KEY_ID: str = os.getenv("AWS_ACCESS_KEY_ID", "")
     AWS_SECRET_ACCESS_KEY: str = os.getenv("AWS_SECRET_ACCESS_KEY", "")
     AWS_REGION: str = os.getenv("AWS_REGION", "us-east-1")
-    BEDROCK_MODEL_ID: str = os.getenv("BEDROCK_MODEL_ID", "us.anthropic.claude-3-5-sonnet-20241022-v2:0")
+    BEDROCK_MODEL_ID: str = os.getenv("BEDROCK_MODEL_ID", "")
     
     # CORS & Web
     FRONTEND_ORIGIN: str = os.getenv("FRONTEND_ORIGIN", "http://localhost:3000")

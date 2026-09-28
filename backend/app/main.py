@@ -20,9 +20,15 @@ app = FastAPI(
 )
 
 # CORS configuration
+allowed_origins = [settings.FRONTEND_ORIGIN.rstrip("/")]
+# Support default Next.js local development variations if configured
+for default_origin in ["http://localhost:3000", "http://127.0.0.1:3000"]:
+    if default_origin not in allowed_origins:
+        allowed_origins.append(default_origin)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

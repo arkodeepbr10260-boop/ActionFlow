@@ -7,6 +7,7 @@ from app.db import (
     update_pending_action_status
 )
 from app.agent.llm_provider import get_llm_provider
+from app.schemas import BedrockWorkflowPlan, BedrockWorkflowTask
 from app.tools.weather import get_weather
 from app.tools.places import search_places
 from app.tools.planner import generate_plan
@@ -32,104 +33,167 @@ class AgentOrchestrator:
                 "details": details or {}
             })
 
-        # Step 1: Request Interpreter
+        # Step 1: Request Interpreter via LLM
         emit_event("Understanding request")
         
+        system_prompt = (
+            "You are ActionFlow's intelligent orchestrator. Given a user goal and previous conversation context, "
+            "determine the structured tasks needed. Respond ONLY with a valid JSON object matching this schema:\n"
+            "{\n"
+            '  "goal": "summarized user goal",\n'
+            '  "tasks": [\n'
+            '    {"tool": "get_weather", "arguments": {"location": "string", "date": "string"}},\n'
+            '    {"tool": "search_places", "arguments": {"query": "string", "location": "string"}},\n'
+            '    {"tool": "generate_plan", "arguments": {"user_goal": "string"}},\n'
+            '    {"tool": "create_reminder", "arguments": {"title": "string", "datetime_str": "string"}}\n'
+            "  ],\n"
+            '  "requires_confirmation": boolean\n'
+            "}\n"
+            "Do not include explanation, markdown code blocks, or chain-of-thought."
+        )
+
+        user_prompt = f"Goal: {message}\nContext: {json.dumps(existing_context)}"
+        
+        # Invoke LLM (BedrockProvider when live, MockBedrockProvider otherwise)
+        workflow_plan: Optional[BedrockWorkflowPlan] = None
+        try:
+            llm_output = self.llm.generate(user_prompt, system_prompt=system_prompt)
+            # Clean potential markdown wrapping
+            cleaned = llm_output.strip()
+            if cleaned.startswith("```json"):
+                cleaned = cleaned[7:]
+            if cleaned.startswith("```"):
+                cleaned = cleaned[3:]
+            if cleaned.endswith("```"):
+                cleaned = cleaned[:-3]
+            data = json.loads(cleaned.strip())
+            workflow_plan = BedrockWorkflowPlan(**data)
+        except Exception as e:
+            # Safe fallback if LLM response is malformed or Bedrock call fails
+            message_lower = message.lower()
+            if "tomorrow" in message_lower and existing_context.get("last_goal"):
+                loc = existing_context.get("location", "Campus Town")
+                act = existing_context.get("activity_query", "nearby lounge or coffee shop")
+                workflow_plan = BedrockWorkflowPlan(
+                    goal=message,
+                    tasks=[
+                        BedrockWorkflowTask(tool="get_weather", arguments={"location": loc, "date": "Tomorrow"}),
+                        BedrockWorkflowTask(tool="search_places", arguments={"query": act, "location": loc}),
+                        BedrockWorkflowTask(tool="generate_plan", arguments={"user_goal": message})
+                    ],
+                    requires_confirmation=False
+                )
+            else:
+                workflow_plan = BedrockWorkflowPlan(
+                    goal=message,
+                    tasks=[
+                        BedrockWorkflowTask(tool="get_weather", arguments={"location": "Campus Town", "date": "Today"}),
+                        BedrockWorkflowTask(tool="search_places", arguments={"query": "nearby lounge or coffee shop", "location": "Campus Town"}),
+                        BedrockWorkflowTask(tool="generate_plan", arguments={"user_goal": message}),
+                        BedrockWorkflowTask(tool="create_reminder", arguments={"title": "Evening Activity: Campus Lounge", "datetime_str": "6:00 PM"})
+                    ],
+                    requires_confirmation=("remind" in message_lower or "reminder" in message_lower or "6" in message_lower)
+                )
+
         # Step 2: Task Planner & Tool Selector
-        emit_event("Planning tasks")
-        
-        # Determine intent / tools based on LLM & context
-        message_lower = message.lower()
-        
-        # Follow-up context check (e.g., "What about tomorrow?")
-        is_followup = False
-        if "tomorrow" in message_lower and existing_context.get("last_goal"):
-            is_followup = True
-            location = existing_context.get("location", "Campus Town")
-            activity = existing_context.get("activity_query", "nearby spots")
-            target_date = "Tomorrow"
-        else:
-            location = "Campus Town"
-            activity = "nearby lounge or coffee shop"
-            target_date = "Today"
+        emit_event("Planning tasks", {"goal": workflow_plan.goal, "task_count": len(workflow_plan.tasks)})
 
         collected_results: Dict[str, Any] = {}
-
-        # Step 3: Tool Execution
-        # Weather
-        emit_event("Checking weather")
-        weather_res = await get_weather(location, target_date)
-        collected_results["weather"] = weather_res
-        log_tool_run(session_id, "get_weather", {"location": location, "date": target_date}, weather_res, "success")
-        tool_results.append({
-            "tool_name": "get_weather",
-            "inputs": {"location": location, "date": target_date},
-            "outputs": weather_res,
-            "status": "success"
-        })
-
-        # Places
-        emit_event("Searching nearby places")
-        places_res = await search_places(activity, location)
-        collected_results["places"] = places_res
-        log_tool_run(session_id, "search_places", {"query": activity, "location": location}, {"places": places_res}, "success")
-        tool_results.append({
-            "tool_name": "search_places",
-            "inputs": {"query": activity, "location": location},
-            "outputs": {"places": places_res},
-            "status": "success"
-        })
-
-        # Plan generation
-        emit_event("Preparing plan")
-        plan_res = generate_plan(message, collected_results)
-        log_tool_run(session_id, "generate_plan", {"goal": message}, plan_res, "success")
-        tool_results.append({
-            "tool_name": "generate_plan",
-            "inputs": {"user_goal": message},
-            "outputs": plan_res,
-            "status": "success"
-        })
-
-        # Context update
-        save_context_item(session_id, "last_goal", message)
-        save_context_item(session_id, "location", location)
-        save_context_item(session_id, "activity_query", activity)
-        save_context_item(session_id, "last_plan", plan_res)
-
         pending_action_data = None
-        
-        # State-changing tool preparation (create_reminder)
-        if "remind" in message_lower or "reminder" in message_lower or not is_followup:
-            emit_event("Waiting for confirmation")
-            time_str = "6:00 PM" if "6" in message_lower else "6:00 PM"
-            rem_title = f"Evening Activity: {plan_res['recommended_place']['name']}"
-            
-            # Call create_reminder with confirmed=False
-            rem_res = create_reminder(session_id, rem_title, time_str, confirmed=False)
-            pending_action_data = rem_res.get("pending_action")
-            
-            log_tool_run(session_id, "create_reminder", {"title": rem_title, "datetime_str": time_str, "confirmed": False}, rem_res, "pending_confirmation")
-            tool_results.append({
-                "tool_name": "create_reminder",
-                "inputs": {"title": rem_title, "datetime_str": time_str},
-                "outputs": rem_res,
-                "status": "pending_confirmation"
-            })
+        weather_res: Dict[str, Any] = {"weather_condition": "Clear", "temperature": "22°C"}
+        places_res: List[Dict[str, Any]] = []
+        plan_res: Dict[str, Any] = {}
+        location_used = "Campus Town"
+        activity_used = "nearby spots"
+        target_date = "Today"
+
+        # Step 3: Execute tasks produced by Bedrock/planner
+        for task in workflow_plan.tasks:
+            t_name = task.tool
+            t_args = task.arguments
+
+            if t_name == "get_weather":
+                emit_event("Checking weather")
+                location_used = t_args.get("location", "Campus Town")
+                target_date = t_args.get("date", "Today")
+                weather_res = await get_weather(location_used, target_date)
+                collected_results["weather"] = weather_res
+                log_tool_run(session_id, "get_weather", t_args, weather_res, "success")
+                tool_results.append({
+                    "tool_name": "get_weather",
+                    "inputs": t_args,
+                    "outputs": weather_res,
+                    "status": "success"
+                })
+
+            elif t_name == "search_places":
+                emit_event("Searching nearby places")
+                activity_used = t_args.get("query", "nearby spots")
+                location_used = t_args.get("location", location_used)
+                places_res = await search_places(activity_used, location_used)
+                collected_results["places"] = places_res
+                log_tool_run(session_id, "search_places", t_args, {"places": places_res}, "success")
+                tool_results.append({
+                    "tool_name": "search_places",
+                    "inputs": t_args,
+                    "outputs": {"places": places_res},
+                    "status": "success"
+                })
+
+            elif t_name == "generate_plan":
+                emit_event("Preparing plan")
+                plan_res = generate_plan(message, collected_results)
+                log_tool_run(session_id, "generate_plan", {"goal": message}, plan_res, "success")
+                tool_results.append({
+                    "tool_name": "generate_plan",
+                    "inputs": {"user_goal": message},
+                    "outputs": plan_res,
+                    "status": "success"
+                })
+
+            elif t_name == "create_reminder":
+                # Explicit confirmation gate: unconfirmed reminder is staged
+                emit_event("Waiting for confirmation")
+                rem_title = t_args.get("title") or f"Evening Activity: {plan_res.get('recommended_place', {}).get('name', 'Planned Activity')}"
+                time_str = t_args.get("datetime_str", "6:00 PM")
+                rem_res = create_reminder(session_id, rem_title, time_str, confirmed=False)
+                pending_action_data = rem_res.get("pending_action")
+                log_tool_run(session_id, "create_reminder", {"title": rem_title, "datetime_str": time_str, "confirmed": False}, rem_res, "pending_confirmation")
+                tool_results.append({
+                    "tool_name": "create_reminder",
+                    "inputs": {"title": rem_title, "datetime_str": time_str},
+                    "outputs": rem_res,
+                    "status": "pending_confirmation"
+                })
+
+        # Save persistent context
+        save_context_item(session_id, "last_goal", message)
+        save_context_item(session_id, "location", location_used)
+        save_context_item(session_id, "activity_query", activity_used)
+        if plan_res:
+            save_context_item(session_id, "last_plan", plan_res)
 
         emit_event("Workflow complete")
 
-        # Response text formulation (No chain of thought exposed)
+        # Response text formulation (concise, verifiable, without chain-of-thought)
         if pending_action_data:
+            rec_name = plan_res.get("recommended_place", {}).get("name", "the recommended place")
+            rec_cat = plan_res.get("recommended_place", {}).get("category", "Activity")
+            w_cond = weather_res.get("weather_condition", "Pleasant")
+            w_temp = weather_res.get("temperature", "22°C")
+            dt_str = pending_action_data["arguments"].get("datetime_str", "6:00 PM")
             response_text = (
-                f"I've planned your evening after college! The weather will be {weather_res['weather_condition']} ({weather_res['temperature']}). "
-                f"I recommend visiting **{plan_res['recommended_place']['name']}** ({plan_res['recommended_place']['category']}). "
-                f"I have prepared a reminder for {pending_action_data['arguments']['datetime_str']}. Please confirm to set the reminder."
+                f"I've planned your evening after college! The weather will be {w_cond} ({w_temp}). "
+                f"I recommend visiting **{rec_name}** ({rec_cat}). "
+                f"I have prepared a reminder for {dt_str}. Please confirm to set the reminder."
             )
         else:
+            rec_name = plan_res.get("recommended_place", {}).get("name", "the recommended spot")
+            w_cond = weather_res.get("weather_condition", "Pleasant")
+            w_temp = weather_res.get("temperature", "22°C")
             response_text = (
-                f"Here is your updated plan for {target_date}: The weather in {location} is expected to be {weather_res['weather_condition']} ({weather_res['temperature']}). "
-                f"Great option: **{plan_res['recommended_place']['name']}**!"
+                f"Here is your updated plan for {target_date}: The weather in {location_used} is expected to be {w_cond} ({w_temp}). "
+                f"Great option: **{rec_name}**!"
             )
 
         # Save assistant message
